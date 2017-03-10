@@ -1,7 +1,7 @@
 #include <iostream>
 
+#include <glew.h>
 #include <glfw3.h>
-
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
@@ -36,63 +36,96 @@ int main(int argc, char** argv)
 
 	glfwMakeContextCurrent(window);
 
+	glewExperimental = true;
+	if (glewInit() != GLEW_OK)
+	{
+		cout << "failed to initialize GLEW" << endl;
+		glfwTerminate();
+		return -1;
+	}
+
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
 	glClearColor(0, 0, 0.4, 1);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID); // need to add glew
-	glDepthFunc(VertexArrayID);
+	GLuint vertexArrayID;
+	glGenVertexArrays(1, &vertexArrayID); // need to add glew
+	glBindVertexArray(vertexArrayID);
 
-	while (!glfwWindowShouldClose(window))
+	mat4 projection = perspective(radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	mat4 view = lookAt(
+		vec3(4, 3, -3),
+		vec3(0, 0, 0),
+		vec3(0, 1, 0)
+	);
+
+	mat4 model = mat4(1.0f);
+	mat4 mvp = projection * view * model;
+
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+		-1.0f,-1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f, // triangle 1 : end
+		1.0f, 1.0f,-1.0f, // triangle 2 : begin
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f, // triangle 2 : end
+		1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f
+	};
+
+	GLuint vertexBuffer;
+	glGenBuffers(1, &vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+
+	do 
 	{
-		glClear(GL_COLOR_BUFFER_BIT);		
-		static const GLfloat g_vertex_buffer_data[] = {
-			-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-			-1.0f,-1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f, // triangle 1 : end
-			1.0f, 1.0f,-1.0f, // triangle 2 : begin
-			-1.0f,-1.0f,-1.0f,
-			-1.0f, 1.0f,-1.0f, // triangle 2 : end
-			1.0f,-1.0f, 1.0f,
-			-1.0f,-1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f, 1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			-1.0f,-1.0f,-1.0f,
-			-1.0f,-1.0f,-1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f,-1.0f,
-			1.0f,-1.0f, 1.0f,
-			-1.0f,-1.0f, 1.0f,
-			-1.0f,-1.0f,-1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f,-1.0f, 1.0f,
-			1.0f,-1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f, 1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f,-1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f,-1.0f,
-			-1.0f, 1.0f,-1.0f,
-			1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f,-1.0f,
-			-1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			1.0f,-1.0f, 1.0f
-		};
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		
+		glTranslatef(1.5, 0.0f, -7.0f);
+
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 
+		glDisableVertexAttribArray(0);
 
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
-	}
+	} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 
 	glfwTerminate();
 	return 0;
