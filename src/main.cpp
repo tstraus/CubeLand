@@ -58,12 +58,12 @@ int main(int argc, char** argv)
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
-	
+
 	// compile the shaders
 	GLint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-	
+
 	// check for errors
 	GLint success;
 	GLchar infoLog[512];
@@ -105,11 +105,13 @@ int main(int argc, char** argv)
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, 0.0f,
 		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
+		0.5f, 0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f
 	};
 
 	GLuint indices[] = {
-		0, 1, 2
+		0, 1, 2,
+		0, 2, 3
 	};
 
 	GLuint VBO, VAO, EBO;
@@ -142,7 +144,7 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-		
+
 
 		glfwSwapBuffers(window);
 	}
